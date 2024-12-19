@@ -1,5 +1,5 @@
 # 💫 About Me:
-#### 💡Passionate in video development and app development.<br>
+#### 💡I'm passionate about software development, interested in video game development.<br>
 #### 📖Currently is a Sophomore in Software and Knowledge Engineering at Kasetsart Engineering
 
 ## 🌐 Socials:
