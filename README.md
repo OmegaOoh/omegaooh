@@ -1,5 +1,5 @@
 # 💫 About Me:
-#### 💡I'm passionate about software development, interested in video game development.<br>
+#### 💡I'm interested in software development and video game development.<br>
 #### 📖Currently is a Sophomore in Software and Knowledge Engineering at Kasetsart Engineering
 
 ## 🌐 Socials:
@@ -8,6 +8,7 @@
 # 💻 Tech Stack:
 ![C++](https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![YAML](https://img.shields.io/badge/YAML-CB171E?logo=yaml&logoColor=fff)
 ![Django](https://img.shields.io/badge/Django-%23092E20.svg?logo=django&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?logo=vuedotjs&logoColor=fff)
