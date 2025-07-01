@@ -38,5 +38,38 @@
 ![](https://github-readme-stats.vercel.app/api?username=OmegaOoh&theme=dark&hide_border=true&include_all_commits=false&count_private=true)  
 ![](https://github-readme-streak-stats.herokuapp.com/?user=OmegaOoh&theme=dark&hide_border=true)  
 ![](https://github-readme-stats.vercel.app/api/top-langs/?username=OmegaOoh&theme=dark&hide_border=true&include_all_commits=false&count_private=true&layout=compact)
+
+--
+
+## 🚩 Featured Projects
+
+### [ku-tangtee](https://github.com/OmegaOoh/ku-tangtee)
+A web application for gathering people for events or activities, powered by Django.
+- **Tech stack:** Python, Django, Vue.js, JavaScript
+- **Highlights:** Event organization, user management, and modern web UI
+
+---
+
+### [traffic-flow-analysis](https://github.com/OmegaOoh/traffic-flow-analysis)
+Simple API web server providing data about traffic flow.
+- **Tech stack:** Rust, Vue.js, TypeScript, JavaScript
+- **Highlights:** Fast backend in Rust, interactive frontend
+
+---
+
+### [fire-station-db](https://github.com/OmegaOoh/fire-station-db)
+Database application for City Fire Station.
+- **Tech stack:** Vue.js, Python, JavaScript
+- **Highlights:** Data management, user-friendly interface
+
+---
+
+### [todo-cmd](https://github.com/OmegaOoh/todo-cmd)
+Todo list command-line application implemented with Rust.
+- **Tech stack:** Rust
+- **Highlights:** CLI productivity tool, learning Rust by building
+
+---
+
 <!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
 <!-- Badge URL from https://ileriayo.github.io/markdown-badges/ -->
