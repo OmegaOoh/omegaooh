@@ -1,8 +1,16 @@
 # 👋 Hi, I'm Sirapob Phasut (Omega)
 
-<p align="left">
+<div align="left">
   <a href="https://github.com/OmegaOoh"><img src="https://img.shields.io/badge/SKE21-Kasetsart%20University-green?style=for-the-badge&logo=kasetsartuniversity" alt="KU SKE" /></a>
-</p>
+</div>
+
+<br/>
+
+<div align="center">
+  <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=239120&center=true&vCenter=true&width=600&lines=Software+Developer;SKE21+%40+Kasetsart+University;Python+%7C+Java+%7C+TypeScript+%7C+Go+%7C+C%2B%2B;Building+High-Performance+%26+Secure+Software" alt="Typing SVG" />
+  </a>
+</div>
 
 > **Software Developer | Software & Knowledge Engineering Student at Kasetsart University**  
 
@@ -12,9 +20,19 @@
 ---
 
 ### 💫 About Me
-- 💡 Interested in **Software Development**
-- 🎓 Majoring in **Software and Knowledge Engineering** at Kasetsart University
-- 🧠 Always eager to learn new technologies and build exciting projects
+- 💡 Interested in **Software Development, System Architecture, & AI/ML**
+- 🎓 Majoring in **Software and Knowledge Engineering (SKE21)** at Kasetsart University
+- 🧠 Always eager to explore new tech stacks, build open-source tools, and tackle complex problems
+
+---
+
+### 💻 Featured Projects
+
+| Project | Description | Tech Stack | Link |
+| :--- | :--- | :--- | :---: |
+| 👥 **`ku-tangtee`** | Web application for gathering people for events, study sessions, or campus activities at Kasetsart University. | ![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white) ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | [Repo](https://github.com/OmegaOoh/ku-tangtee) |
+| 💼 **`KU-Work`** | Academic & student workload management platform designed for Kasetsart University operations. | ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![NodeJS](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) | [Repo](https://github.com/OmegaOoh/KU-Work) |
+| 🔍 **`arch-diver`** | Software architecture smell analysis and automated explanation using GraphSAGE & LLM models. | ![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white) | [Repo](https://github.com/Yet-Another-Software-Team/ArchDiver) |
 
 ---
 
@@ -28,13 +46,16 @@
 ![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white) ![Gin](https://img.shields.io/badge/Gin-00ADD8?style=flat-square&logo=go&logoColor=white) ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white) ![Nuxt.js](https://img.shields.io/badge/Nuxt.js-00DC82?style=flat-square&logo=nuxtdotjs&logoColor=white) ![DaisyUI](https://img.shields.io/badge/DaisyUI-5A0EF8?style=flat-square&logo=daisyui&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black) ![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white) ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
 
 **Tools & Databases**  
-![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white) ![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)
 <!-- END_SECTION:tech_stack -->
+
+---
 
 ### 📊 GitHub Stats
 
 <div align="center">
   <img src="https://ghstats.dev/api/card?username=OmegaOoh&theme=github-dark" alt="GitHub Stats" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=OmegaOoh&layout=compact&theme=github_dark&hide_border=true" alt="Top Languages" />
 </div>
 
 <br/>
