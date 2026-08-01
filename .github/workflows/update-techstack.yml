@@ -1,4 +1,4 @@
-name: Update Tech Stack
+name: Update Profile README
 
 on:
   schedule:
@@ -20,24 +20,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update Tech Stack using official github-script
+      # Step 1: Update Tech Stack Badges
+      - name: Update Tech Stack in README
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-
             const username = 'OmegaOoh';
             const extraOrgs = ['Yet-Another-Software-Team'];
 
-            // Load tech stack catalog configuration
             const catalogData = JSON.parse(fs.readFileSync('.github/techstack-catalog.json', 'utf8'));
             const badgeCatalog = catalogData.badgeCatalog;
             const coreTech = catalogData.coreTech;
 
             let repos = [];
 
-            // 1. Fetch user personal repos
             try {
               const res = await github.rest.repos.listForUser({
                 username: username,
@@ -46,10 +44,9 @@ jobs:
               });
               repos.push(...res.data);
             } catch (err) {
-              console.error("Failed to fetch user repos:", err);
+              console.error("Failed to fetch user repos");
             }
 
-            // 2. Fetch user organizations
             let orgNames = new Set(extraOrgs);
             try {
               const userOrgs = await github.rest.orgs.listForUser({ username });
@@ -57,10 +54,9 @@ jobs:
                 orgNames.add(org.login);
               }
             } catch (err) {
-              console.log("Using fallback org list:", err.message);
+              console.log("Using fallback org list");
             }
 
-            // 3. Fetch repos from organizations and filter ONLY those contributed to
             for (const org of orgNames) {
               try {
                 const orgRepos = await github.rest.repos.listForOrg({
@@ -82,11 +78,11 @@ jobs:
                       repos.push(repo);
                     }
                   } catch (err) {
-                    console.log(`Could not check contributors for ${org}/${repo.name}:`, err.message);
+                    console.log(`Could not check contributors for ${org}/${repo.name}`);
                   }
                 }
               } catch (err) {
-                console.log(`Could not fetch repos for org ${org}:`, err.message);
+                console.log(`Could not fetch repos for org ${org}`);
               }
             }
 
@@ -133,12 +129,110 @@ jobs:
 
             let content = fs.readFileSync('README.md', 'utf8');
             const pattern = /(<!-- START_SECTION:tech_stack -->)([\s\S]*?)(<!-- END_SECTION:tech_stack -->)/;
-            content = content.replace(pattern, `$1\n${techStackMd}\n$3`);
-            fs.writeFileSync('README.md', content, 'utf8');
+            if (pattern.test(content)) {
+              content = content.replace(pattern, `$1\n${techStackMd}\n$3`);
+              fs.writeFileSync('README.md', content, 'utf8');
+            }
 
+      # Step 2: Fetch LinkedIn Experience & Update README
+      - name: Fetch LinkedIn Experience & Update README
+        uses: actions/github-script@v7
+        env:
+          LINKEDIN_TOKEN: ${{ secrets.LINKEDIN_TOKEN }}
+          LINKEDIN_RAPIDAPI_KEY: ${{ secrets.LINKEDIN_RAPIDAPI_KEY }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            // Access token securely from environment variables
+            const linkedinToken = process.env.LINKEDIN_TOKEN;
+            const rapidApiKey = process.env.LINKEDIN_RAPIDAPI_KEY;
+            const linkedinProfileId = 'sirapob-phasut-ba5649323';
+
+            let experiences = [];
+
+            if (linkedinToken && linkedinToken.trim() !== '') {
+              try {
+                console.log("Fetching experience from LinkedIn API...");
+                const response = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
+                  headers: {
+                    'Authorization': `Bearer ${linkedinToken.trim()}`,
+                    'X-Restli-Protocol-Version': '2.0.0'
+                  }
+                });
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data.elements) {
+                    experiences = data.elements.map(pos => ({
+                      title: pos.title || 'Software Developer',
+                      company: pos.companyName || (pos['company~'] && pos['company~'].name) || '',
+                      period: `${pos.startDate ? pos.startDate.year : ''} - ${pos.endDate ? pos.endDate.year : 'Present'}`,
+                      description: pos.description || ''
+                    }));
+                  }
+                } else {
+                  console.error(`LinkedIn API returned HTTP status: ${response.status}`);
+                }
+              } catch (err) {
+                console.error("LinkedIn API fetch encountered an error.");
+              }
+            } else if (rapidApiKey && rapidApiKey.trim() !== '') {
+              try {
+                console.log("Fetching experience from RapidAPI LinkedIn service...");
+                const response = await fetch(`https://linkedin-api8.p.rapidapi.com/get-profile-data-by-url?url=https://www.linkedin.com/in/${linkedinProfileId}/`, {
+                  headers: {
+                    'x-rapidapi-key': rapidApiKey.trim(),
+                    'x-rapidapi-host': 'linkedin-api8.p.rapidapi.com'
+                  }
+                });
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data.experiences) {
+                    experiences = data.experiences.map(exp => ({
+                      title: exp.title || '',
+                      company: exp.company || '',
+                      period: exp.dateRange || '',
+                      description: exp.caption || exp.description || ''
+                    }));
+                  }
+                } else {
+                  console.error(`RapidAPI returned HTTP status: ${response.status}`);
+                }
+              } catch (err) {
+                console.error("RapidAPI fetch encountered an error.");
+              }
+            } else {
+              console.log("No LINKEDIN_TOKEN or LINKEDIN_RAPIDAPI_KEY configured in repository secrets. Skipping LinkedIn sync.");
+              return;
+            }
+
+            if (experiences.length > 0) {
+              const expLines = experiences.map(item => {
+                let itemStr = `- 💼 **${item.title}** ${item.company ? '@ ' + item.company : ''} *(${item.period})*`;
+                if (item.description) {
+                  itemStr += `\n  ${item.description}`;
+                }
+                return itemStr;
+              });
+              const expMd = expLines.join('\n\n');
+              let content = fs.readFileSync('README.md', 'utf8');
+              const expPattern = /(<!-- START_SECTION:experience -->)([\s\S]*?)(<!-- END_SECTION:experience -->)/;
+              if (expPattern.test(content)) {
+                content = content.replace(expPattern, `$1\n${expMd}\n$3`);
+                fs.writeFileSync('README.md', content, 'utf8');
+                console.log("Successfully updated README.md with live LinkedIn experience!");
+              } else {
+                console.log("Experience section tags not found in README.md.");
+              }
+            } else {
+              console.log("No experience data received. Existing experience section preserved.");
+            }
+
+      # Step 3: Atomic Commit and Push (Prevents Git Race Conditions)
       - name: Commit and push changes if updated
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update tech stack in README [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update profile README [skip ci]" && git push)
