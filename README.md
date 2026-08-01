@@ -1,4 +1,4 @@
-# 👋 Hi, I'm Sirapob Phasut (OmegaOoh)
+# 👋 Hi, I'm Sirapob Phasut (Omega)
 
 <p align="left">
   <a href="https://github.com/OmegaOoh"><img src="https://img.shields.io/badge/SKE21-Kasetsart%20University-green?style=for-the-badge&logo=kasetsartuniversity" alt="KU SKE" /></a>
