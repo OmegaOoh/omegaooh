@@ -4,14 +4,6 @@
   <a href="https://github.com/OmegaOoh"><img src="https://img.shields.io/badge/SKE21-Kasetsart%20University-green?style=for-the-badge&logo=kasetsartuniversity" alt="KU SKE" /></a>
 </div>
 
-<br/>
-
-<div align="center">
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1000&color=239120&center=true&vCenter=true&width=600&lines=Software+Developer;SKE21+%40+Kasetsart+University;Python+%7C+Java+%7C+TypeScript+%7C+Go+%7C+C%2B%2B;Building+High-Performance+%26+Secure+Software" alt="Typing SVG" />
-  </a>
-</div>
-
 > **Software Developer | Software & Knowledge Engineering Student at Kasetsart University**  
 
 > 💼 **Application Developer Intern** @ ExxonMobil
