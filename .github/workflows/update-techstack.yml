@@ -142,6 +142,7 @@ jobs:
           LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
           LINKEDIN_REFRESH_TOKEN: ${{ secrets.LINKEDIN_REFRESH_TOKEN }}
           LINKEDIN_TOKEN: ${{ secrets.LINKEDIN_TOKEN }}
+          LINKEDIN_POSITION: ${{ secrets.LINKEDIN_POSITION || vars.LINKEDIN_POSITION }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -151,6 +152,7 @@ jobs:
             const clientId = (process.env.LINKEDIN_CLIENT_ID || '').trim();
             const clientSecret = (process.env.LINKEDIN_CLIENT_SECRET || '').trim();
             const explicitRefreshToken = (process.env.LINKEDIN_REFRESH_TOKEN || '').trim();
+            const customPosition = (process.env.LINKEDIN_POSITION || 'Application Developer Intern @ ExxonMobil').trim();
 
             // 1. Refresh Access Token if Refresh Token Credentials exist
             if (explicitRefreshToken && clientId && clientSecret) {
@@ -236,17 +238,18 @@ jobs:
                   console.log("Positions query notice:", e.message);
                 }
 
-                // If position API is restricted, automatically extract Current Position from LinkedIn Headline
-                if (experiences.length === 0 && headline) {
-                  console.log(`Parsing Current Position from LinkedIn Headline: "${headline}"`);
-                  let title = headline;
+                // If position API is restricted, extract Current Position from LinkedIn Headline or LINKEDIN_POSITION secret
+                const targetPosition = headline || customPosition;
+                if (experiences.length === 0 && targetPosition) {
+                  console.log(`Using Current Position: "${targetPosition}"`);
+                  let title = targetPosition;
                   let company = '';
-                  if (headline.includes(' at ')) {
-                    const parts = headline.split(' at ');
+                  if (targetPosition.includes(' at ')) {
+                    const parts = targetPosition.split(' at ');
                     title = parts[0].trim();
                     company = parts.slice(1).join(' at ').trim();
-                  } else if (headline.includes(' @ ')) {
-                    const parts = headline.split(' @ ');
+                  } else if (targetPosition.includes(' @ ')) {
+                    const parts = targetPosition.split(' @ ');
                     title = parts[0].trim();
                     company = parts.slice(1).join(' @ ').trim();
                   }
@@ -261,9 +264,26 @@ jobs:
               } catch (err) {
                 console.log("LinkedIn REST API query error:", err.message);
               }
-            } else {
-              console.log("No LINKEDIN_TOKEN found in secrets. Skipping LinkedIn experience sync.");
-              return;
+            } else if (customPosition) {
+              console.log(`Using configured position secret/variable: "${customPosition}"`);
+              let title = customPosition;
+              let company = '';
+              if (customPosition.includes(' at ')) {
+                const parts = customPosition.split(' at ');
+                title = parts[0].trim();
+                company = parts.slice(1).join(' at ').trim();
+              } else if (customPosition.includes(' @ ')) {
+                const parts = customPosition.split(' @ ');
+                title = parts[0].trim();
+                company = parts.slice(1).join(' @ ').trim();
+              }
+
+              experiences.push({
+                title: title,
+                company: company,
+                period: 'Present',
+                description: ''
+              });
             }
 
             if (experiences.length > 0) {
