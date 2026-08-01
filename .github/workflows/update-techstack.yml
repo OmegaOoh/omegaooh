@@ -28,6 +28,8 @@ jobs:
             const fs = require('fs');
 
             const username = 'OmegaOoh';
+            const extraOrgs = ['Yet-Another-Software-Team', 'isp-merciful'];
+
             const badgeCatalog = {
               'python': { name: 'Python', category: 'Languages', badge: '![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)' },
               'rust': { name: 'Rust', category: 'Languages', badge: '![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white)' },
@@ -38,12 +40,16 @@ jobs:
               'html': { name: 'HTML5', category: 'Languages', badge: '![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)' },
               'css': { name: 'CSS3', category: 'Languages', badge: '![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)' },
               'shell': { name: 'Shell', category: 'Languages', badge: '![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat-square&logo=gnu-bash&logoColor=white)' },
+              'java': { name: 'Java', category: 'Languages', badge: '![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)' },
 
               'django': { name: 'Django', category: 'Frameworks & Web', badge: '![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white)' },
               'vue': { name: 'Vue.js', category: 'Frameworks & Web', badge: '![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)' },
               'vue.js': { name: 'Vue.js', category: 'Frameworks & Web', badge: '![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)' },
               'daisyui': { name: 'DaisyUI', category: 'Frameworks & Web', badge: '![DaisyUI](https://img.shields.io/badge/DaisyUI-5A0EF8?style=flat-square&logo=daisyui&logoColor=white)' },
               'tailwindcss': { name: 'Tailwind CSS', category: 'Frameworks & Web', badge: '![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)' },
+              'react': { name: 'React', category: 'Frameworks & Web', badge: '![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)' },
+              'nextjs': { name: 'Next.js', category: 'Frameworks & Web', badge: '![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)' },
+              'springboot': { name: 'Spring Boot', category: 'Frameworks & Web', badge: '![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white)' },
 
               'git': { name: 'Git', category: 'Tools & Databases', badge: '![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)' },
               'github': { name: 'GitHub', category: 'Tools & Databases', badge: '![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)' },
@@ -51,22 +57,64 @@ jobs:
               'mysql': { name: 'MySQL', category: 'Tools & Databases', badge: '![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)' },
               'mongodb': { name: 'MongoDB', category: 'Tools & Databases', badge: '![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)' },
               'unreal engine': { name: 'Unreal Engine', category: 'Tools & Databases', badge: '![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)' },
-              'unreal-engine': { name: 'Unreal Engine', category: 'Tools & Databases', badge: '![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)' },
-              'blender': { name: 'Blender', category: 'Tools & Databases', badge: '![Blender](https://img.shields.io/badge/Blender-E87D0D?style=flat-square&logo=blender&logoColor=white)' }
+              'unreal-engine': { name: 'Unreal Engine', category: 'Tools & Databases', badge: '![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)' }
             };
 
-            const coreTech = ['python', 'rust', 'c++', 'javascript', 'django', 'vue', 'daisyui', 'git', 'docker', 'mysql', 'mongodb', 'unreal engine', 'blender'];
+            const coreTech = ['python', 'rust', 'c++', 'javascript', 'django', 'vue', 'daisyui', 'git', 'docker', 'mysql', 'mongodb', 'unreal engine'];
 
             let repos = [];
+
+            // 1. Fetch user personal repos
             try {
               const res = await github.rest.repos.listForUser({
                 username: username,
                 type: 'owner',
                 per_page: 100
               });
-              repos = res.data;
+              repos.push(...res.data);
             } catch (err) {
-              console.error("Failed to fetch repos via Octokit:", err);
+              console.error("Failed to fetch user repos:", err);
+            }
+
+            // 2. Fetch user organizations
+            let orgNames = new Set(extraOrgs);
+            try {
+              const userOrgs = await github.rest.orgs.listForUser({ username });
+              for (const org of userOrgs.data) {
+                orgNames.add(org.login);
+              }
+            } catch (err) {
+              console.log("Using fallback org list:", err.message);
+            }
+
+            // 3. Fetch repos from organizations and filter ONLY those contributed to
+            for (const org of orgNames) {
+              try {
+                const orgRepos = await github.rest.repos.listForOrg({
+                  org: org,
+                  per_page: 100
+                });
+                for (const repo of orgRepos.data) {
+                  if (repo.fork) continue;
+                  try {
+                    const contribs = await github.rest.repos.listContributors({
+                      owner: org,
+                      repo: repo.name,
+                      per_page: 100
+                    });
+                    const hasContributed = contribs.data.some(
+                      c => c.login && c.login.toLowerCase() === username.toLowerCase()
+                    );
+                    if (hasContributed) {
+                      repos.push(repo);
+                    }
+                  } catch (err) {
+                    console.log(`Could not check contributors for ${org}/${repo.name}:`, err.message);
+                  }
+                }
+              } catch (err) {
+                console.log(`Could not fetch repos for org ${org}:`, err.message);
+              }
             }
 
             const detected = new Set();
