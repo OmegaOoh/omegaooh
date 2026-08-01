@@ -182,71 +182,84 @@ jobs:
 
             let experiences = [];
 
-            // 2. Query Official LinkedIn REST API & Debug Log Position Output
             if (activeAccessToken !== '') {
               try {
-                console.log("Authenticating with official LinkedIn OpenID API...");
+                console.log("Authenticating with official LinkedIn API...");
+                
+                // Query Profile / Headline via /v2/me and /v2/userinfo
+                let headline = '';
+                try {
+                  const meRes = await fetch('https://api.linkedin.com/v2/me?projection=(id,localizedHeadline,headline)', {
+                    headers: { 'Authorization': `Bearer ${activeAccessToken}` }
+                  });
+                  if (meRes.ok) {
+                    const meData = await meRes.json();
+                    headline = meData.localizedHeadline || meData.headline || '';
+                    console.log(`Fetched headline from LinkedIn /v2/me: "${headline}"`);
+                  }
+                } catch (e) {
+                  console.log("Could not query /v2/me:", e.message);
+                }
+
                 const userRes = await fetch('https://api.linkedin.com/v2/userinfo', {
                   headers: { 'Authorization': `Bearer ${activeAccessToken}` }
                 });
                 if (userRes.ok) {
                   const userData = await userRes.json();
                   console.log(`Successfully authenticated user: ${userData.name}`);
-
-                  try {
-                    console.log("Querying Position API: https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me");
-                    const posRes = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
-                      headers: {
-                        'Authorization': `Bearer ${activeAccessToken}`,
-                        'X-Restli-Protocol-Version': '2.0.0'
-                      }
-                    });
-                    console.log(`LinkedIn Position API HTTP Status: ${posRes.status}`);
-                    const posText = await posRes.text();
-                    console.log("--- DEBUG: LinkedIn Position API Raw Response ---");
-                    console.log(posText);
-                    console.log("-------------------------------------------------");
-
-                    if (posRes.ok) {
-                      const data = JSON.parse(posText);
-                      if (data.elements && data.elements.length > 0) {
-                        experiences = data.elements.map(pos => ({
-                          title: pos.title || 'Software Developer',
-                          company: pos.companyName || (pos['company~'] && pos['company~'].name) || '',
-                          period: `${pos.startDate ? pos.startDate.year : ''} - ${pos.endDate ? pos.endDate.year : 'Present'}`,
-                          description: pos.description || ''
-                        }));
-                      }
-                    }
-                  } catch (e) {
-                    console.log("Position API query debug notice:", e.message);
-                  }
-
-                  if (experiences.length === 0) {
-                    experiences = [
-                      {
-                        title: "Teaching Assistant",
-                        company: "Department of Computer Engineering, Kasetsart University",
-                        period: "Aug 2025 - Present",
-                        description: "Mentoring 60+ students in Individual Software Development Process, guiding SDLC & software architecture application."
-                      },
-                      {
-                        title: "WordPress Developer Intern",
-                        company: "Department of Computer Engineering, Kasetsart University",
-                        period: "Jun 2025 - Jul 2025",
-                        description: "Designed & developed custom WordPress page templates (SKE Overview) for improved UI/UX presentation."
-                      },
-                      {
-                        title: "Board Secretary & Student Leader",
-                        company: "SKE21 / Kasetsart University",
-                        period: "2024 - Present",
-                        description: "Secretary of Board of Directors for SKE21; Organizer for SOS Camp 13; Judge Assistant for CPSK Code Party 2025."
-                      }
-                    ];
+                  if (!headline && userData.headline) {
+                    headline = userData.headline;
                   }
                 }
+
+                // Query Positions endpoint if accessible
+                try {
+                  const posRes = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
+                    headers: {
+                      'Authorization': `Bearer ${activeAccessToken}`,
+                      'X-Restli-Protocol-Version': '2.0.0'
+                    }
+                  });
+                  if (posRes.ok) {
+                    const posText = await posRes.text();
+                    const data = JSON.parse(posText);
+                    if (data.elements && data.elements.length > 0) {
+                      experiences = data.elements.map(pos => ({
+                        title: pos.title || 'Software Developer',
+                        company: pos.companyName || (pos['company~'] && pos['company~'].name) || '',
+                        period: `${pos.startDate ? pos.startDate.year : ''} - ${pos.endDate ? pos.endDate.year : 'Present'}`,
+                        description: pos.description || ''
+                      }));
+                    }
+                  }
+                } catch (e) {
+                  console.log("Positions query notice:", e.message);
+                }
+
+                // If position API is restricted, automatically extract Current Position from LinkedIn Headline
+                if (experiences.length === 0 && headline) {
+                  console.log(`Parsing Current Position from LinkedIn Headline: "${headline}"`);
+                  let title = headline;
+                  let company = '';
+                  if (headline.includes(' at ')) {
+                    const parts = headline.split(' at ');
+                    title = parts[0].trim();
+                    company = parts.slice(1).join(' at ').trim();
+                  } else if (headline.includes(' @ ')) {
+                    const parts = headline.split(' @ ');
+                    title = parts[0].trim();
+                    company = parts.slice(1).join(' @ ').trim();
+                  }
+
+                  experiences.push({
+                    title: title,
+                    company: company,
+                    period: 'Present',
+                    description: ''
+                  });
+                }
               } catch (err) {
-                console.log("LinkedIn REST API query completed.");
+                console.log("LinkedIn REST API query error:", err.message);
               }
             } else {
               console.log("No LINKEDIN_TOKEN found in secrets. Skipping LinkedIn experience sync.");
@@ -263,11 +276,11 @@ jobs:
               });
               const expMd = expLines.join('\n\n');
               let content = fs.readFileSync('README.md', 'utf8');
-              const expPattern = /(<!-- START_SECTION:experience -->)([\s\S]*?)(<!-- END_SECTION:experience -->)/;
-              if (expPattern.test(content)) {
-                content = content.replace(expPattern, `$1\n${expMd}\n$3`);
+              const posPattern = /(<!-- START_SECTION:position -->|<!-- START_SECTION:experience -->)([\s\S]*?)(<!-- END_SECTION:position -->|<!-- END_SECTION:experience -->)/;
+              if (posPattern.test(content)) {
+                content = content.replace(posPattern, `$1\n${expMd}\n$3`);
                 fs.writeFileSync('README.md', content, 'utf8');
-                console.log("Successfully updated README.md with live LinkedIn experience!");
+                console.log("Successfully updated README.md with live LinkedIn position!");
               }
             }
 

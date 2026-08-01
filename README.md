@@ -15,6 +15,13 @@
 
 ---
 
+### 💼 Position
+
+<!-- START_SECTION:position -->
+<!-- END_SECTION:position -->
+
+---
+
 ### 🚀 Tech Stack
 
 <!-- START_SECTION:tech_stack -->
