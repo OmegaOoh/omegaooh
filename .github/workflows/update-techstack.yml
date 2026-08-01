@@ -288,9 +288,9 @@ jobs:
 
             if (experiences.length > 0) {
               const expLines = experiences.map(item => {
-                let itemStr = `- 💼 **${item.title}** ${item.company ? '@ ' + item.company : ''} *(${item.period})*`;
+                let itemStr = `> 💼 **${item.title}** ${item.company ? '@ ' + item.company : ''}`;
                 if (item.description) {
-                  itemStr += `\n  ${item.description}`;
+                  itemStr += `\n> ${item.description}`;
                 }
                 return itemStr;
               });

@@ -6,20 +6,15 @@
 
 > **Software Developer | Software & Knowledge Engineering Student at Kasetsart University**  
 
+<!-- START_SECTION:position -->
+<!-- END_SECTION:position -->
+
 ---
 
 ### 💫 About Me
 - 💡 Interested in **Software Development**
 - 🎓 Majoring in **Software and Knowledge Engineering** at Kasetsart University
 - 🧠 Always eager to learn new technologies and build exciting projects
-
----
-
-### 💼 Position
-
-<!-- START_SECTION:position -->
-- 💼 **Application Developer Intern** @ ExxonMobil *(Present)*
-<!-- END_SECTION:position -->
 
 ---
 
