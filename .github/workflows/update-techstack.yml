@@ -28,7 +28,7 @@ jobs:
             const fs = require('fs');
 
             const username = 'OmegaOoh';
-            const extraOrgs = ['Yet-Another-Software-Team', 'isp-merciful'];
+            const extraOrgs = ['Yet-Another-Software-Team'];
 
             // Load tech stack catalog configuration
             const catalogData = JSON.parse(fs.readFileSync('.github/techstack-catalog.json', 'utf8'));

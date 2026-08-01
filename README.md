@@ -1,9 +1,9 @@
 # 👋 Hi, I'm Sirapob Phasut (OmegaOoh)
 
-Software & Video Game Developer | Student at Kasetsart University
+Software Developer | Software Engineering Student at Kasetsart University
 
 ### 💫 About Me
-- 💡 Interested in **Software Development** & **Video Game Development**
+- 💡 Interested in **Software Development**
 - 🎓 Majoring in **Software and Knowledge Engineering** at Kasetsart University
 - 🧠 Always eager to learn new technologies and build exciting projects
 
