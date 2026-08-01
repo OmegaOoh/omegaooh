@@ -18,6 +18,7 @@
 ### 💼 Position
 
 <!-- START_SECTION:position -->
+- 💼 **Application Developer Intern** @ ExxonMobil *(Present)*
 <!-- END_SECTION:position -->
 
 ---
