@@ -134,10 +134,13 @@ jobs:
               fs.writeFileSync('README.md', content, 'utf8');
             }
 
-      # Step 2: Fetch LinkedIn Experience & Update README
+      # Step 2: Auto-Refresh LinkedIn Token & Sync Experience
       - name: Fetch LinkedIn Experience & Update README
         uses: actions/github-script@v7
         env:
+          LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+          LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+          LINKEDIN_REFRESH_TOKEN: ${{ secrets.LINKEDIN_REFRESH_TOKEN }}
           LINKEDIN_TOKEN: ${{ secrets.LINKEDIN_TOKEN }}
           LINKEDIN_RAPIDAPI_KEY: ${{ secrets.LINKEDIN_RAPIDAPI_KEY }}
         with:
@@ -145,19 +148,51 @@ jobs:
           script: |
             const fs = require('fs');
 
-            // Access token securely from environment variables
-            const linkedinToken = process.env.LINKEDIN_TOKEN;
-            const rapidApiKey = process.env.LINKEDIN_RAPIDAPI_KEY;
+            let activeAccessToken = (process.env.LINKEDIN_TOKEN || '').trim();
+            const clientId = (process.env.LINKEDIN_CLIENT_ID || '').trim();
+            const clientSecret = (process.env.LINKEDIN_CLIENT_SECRET || '').trim();
+            const refreshToken = (process.env.LINKEDIN_REFRESH_TOKEN || process.env.LINKEDIN_TOKEN || '').trim();
+            const rapidApiKey = (process.env.LINKEDIN_RAPIDAPI_KEY || '').trim();
             const linkedinProfileId = 'sirapob-phasut-ba5649323';
+
+            // Auto-refresh token if Client Credentials & Token/Refresh Token are provided
+            if (refreshToken && clientId && clientSecret) {
+              try {
+                console.log("Attempting automatic refresh of LinkedIn Access Token...");
+                const params = new URLSearchParams();
+                params.append('grant_type', 'refresh_token');
+                params.append('refresh_token', refreshToken);
+                params.append('client_id', clientId);
+                params.append('client_secret', clientSecret);
+
+                const refreshRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: params
+                });
+
+                if (refreshRes.ok) {
+                  const refreshData = await refreshRes.json();
+                  if (refreshData.access_token) {
+                    activeAccessToken = refreshData.access_token;
+                    console.log("Successfully refreshed LinkedIn Access Token!");
+                  }
+                } else {
+                  console.log("Using direct access token (Refresh endpoint returned status:", refreshRes.status, ")");
+                }
+              } catch (err) {
+                console.log("Using direct access token fallback.");
+              }
+            }
 
             let experiences = [];
 
-            if (linkedinToken && linkedinToken.trim() !== '') {
+            if (activeAccessToken !== '') {
               try {
                 console.log("Fetching experience from LinkedIn API...");
                 const response = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
                   headers: {
-                    'Authorization': `Bearer ${linkedinToken.trim()}`,
+                    'Authorization': `Bearer ${activeAccessToken}`,
                     'X-Restli-Protocol-Version': '2.0.0'
                   }
                 });
@@ -177,12 +212,12 @@ jobs:
               } catch (err) {
                 console.error("LinkedIn API fetch encountered an error.");
               }
-            } else if (rapidApiKey && rapidApiKey.trim() !== '') {
+            } else if (rapidApiKey !== '') {
               try {
                 console.log("Fetching experience from RapidAPI LinkedIn service...");
                 const response = await fetch(`https://linkedin-api8.p.rapidapi.com/get-profile-data-by-url?url=https://www.linkedin.com/in/${linkedinProfileId}/`, {
                   headers: {
-                    'x-rapidapi-key': rapidApiKey.trim(),
+                    'x-rapidapi-key': rapidApiKey,
                     'x-rapidapi-host': 'linkedin-api8.p.rapidapi.com'
                   }
                 });
@@ -203,7 +238,7 @@ jobs:
                 console.error("RapidAPI fetch encountered an error.");
               }
             } else {
-              console.log("No LINKEDIN_TOKEN or LINKEDIN_RAPIDAPI_KEY configured in repository secrets. Skipping LinkedIn sync.");
+              console.log("No active token or credentials found. Skipping LinkedIn sync.");
               return;
             }
 
@@ -222,14 +257,12 @@ jobs:
                 content = content.replace(expPattern, `$1\n${expMd}\n$3`);
                 fs.writeFileSync('README.md', content, 'utf8');
                 console.log("Successfully updated README.md with live LinkedIn experience!");
-              } else {
-                console.log("Experience section tags not found in README.md.");
               }
             } else {
               console.log("No experience data received. Existing experience section preserved.");
             }
 
-      # Step 3: Atomic Commit and Push (Prevents Git Race Conditions)
+      # Step 3: Atomic Commit and Push
       - name: Commit and push changes if updated
         run: |
           git config --global user.name "github-actions[bot]"
