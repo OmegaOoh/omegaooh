@@ -182,7 +182,7 @@ jobs:
 
             let experiences = [];
 
-            // 2. Query Official LinkedIn REST API
+            // 2. Query Official LinkedIn REST API & Debug Log Position Output
             if (activeAccessToken !== '') {
               try {
                 console.log("Authenticating with official LinkedIn OpenID API...");
@@ -192,24 +192,57 @@ jobs:
                 if (userRes.ok) {
                   const userData = await userRes.json();
                   console.log(`Successfully authenticated user: ${userData.name}`);
-                }
 
-                console.log("Querying positions from official LinkedIn REST API...");
-                const posRes = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
-                  headers: {
-                    'Authorization': `Bearer ${activeAccessToken}`,
-                    'X-Restli-Protocol-Version': '2.0.0'
+                  try {
+                    console.log("Querying Position API: https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me");
+                    const posRes = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
+                      headers: {
+                        'Authorization': `Bearer ${activeAccessToken}`,
+                        'X-Restli-Protocol-Version': '2.0.0'
+                      }
+                    });
+                    console.log(`LinkedIn Position API HTTP Status: ${posRes.status}`);
+                    const posText = await posRes.text();
+                    console.log("--- DEBUG: LinkedIn Position API Raw Response ---");
+                    console.log(posText);
+                    console.log("-------------------------------------------------");
+
+                    if (posRes.ok) {
+                      const data = JSON.parse(posText);
+                      if (data.elements && data.elements.length > 0) {
+                        experiences = data.elements.map(pos => ({
+                          title: pos.title || 'Software Developer',
+                          company: pos.companyName || (pos['company~'] && pos['company~'].name) || '',
+                          period: `${pos.startDate ? pos.startDate.year : ''} - ${pos.endDate ? pos.endDate.year : 'Present'}`,
+                          description: pos.description || ''
+                        }));
+                      }
+                    }
+                  } catch (e) {
+                    console.log("Position API query debug notice:", e.message);
                   }
-                });
-                if (posRes.ok) {
-                  const data = await posRes.json();
-                  if (data.elements && data.elements.length > 0) {
-                    experiences = data.elements.map(pos => ({
-                      title: pos.title || 'Software Developer',
-                      company: pos.companyName || (pos['company~'] && pos['company~'].name) || '',
-                      period: `${pos.startDate ? pos.startDate.year : ''} - ${pos.endDate ? pos.endDate.year : 'Present'}`,
-                      description: pos.description || ''
-                    }));
+
+                  if (experiences.length === 0) {
+                    experiences = [
+                      {
+                        title: "Teaching Assistant",
+                        company: "Department of Computer Engineering, Kasetsart University",
+                        period: "Aug 2025 - Present",
+                        description: "Mentoring 60+ students in Individual Software Development Process, guiding SDLC & software architecture application."
+                      },
+                      {
+                        title: "WordPress Developer Intern",
+                        company: "Department of Computer Engineering, Kasetsart University",
+                        period: "Jun 2025 - Jul 2025",
+                        description: "Designed & developed custom WordPress page templates (SKE Overview) for improved UI/UX presentation."
+                      },
+                      {
+                        title: "Board Secretary & Student Leader",
+                        company: "SKE21 / Kasetsart University",
+                        period: "2024 - Present",
+                        description: "Secretary of Board of Directors for SKE21; Organizer for SOS Camp 13; Judge Assistant for CPSK Code Party 2025."
+                      }
+                    ];
                   }
                 }
               } catch (err) {
@@ -236,8 +269,6 @@ jobs:
                 fs.writeFileSync('README.md', content, 'utf8');
                 console.log("Successfully updated README.md with live LinkedIn experience!");
               }
-            } else {
-              console.log("LinkedIn API connected. Preserving existing README experience section.");
             }
 
       # Step 3: Atomic Commit and Push
