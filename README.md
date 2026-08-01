@@ -14,9 +14,6 @@
 
 > **Software Developer | Software & Knowledge Engineering Student at Kasetsart University**  
 
-<!-- START_SECTION:position -->
-<!-- END_SECTION:position -->
-
 ---
 
 ### 💫 About Me
@@ -71,6 +68,10 @@
 ---
 
 ### 🌐 Connect & Links
+
+- 🕒 **Timezone**: `UTC+7` (Indochina Time / ICT)
+
+<br/>
 
 <p align="left">
   <a href="https://www.linkedin.com/in/sirapob-phasut-ba5649323/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
