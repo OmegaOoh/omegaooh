@@ -7,6 +7,7 @@
 > **Software Developer | Software & Knowledge Engineering Student at Kasetsart University**  
 
 <!-- START_SECTION:position -->
+> 💼 **Application Developer Intern** @ ExxonMobil
 <!-- END_SECTION:position -->
 
 ---
