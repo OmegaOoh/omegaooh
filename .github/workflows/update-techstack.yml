@@ -20,14 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
       # Step 1: Update Tech Stack Badges
       - name: Update Tech Stack in README
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -139,15 +134,14 @@ jobs:
               fs.writeFileSync('README.md', content, 'utf8');
             }
 
-      # Step 2: Auto-Refresh LinkedIn Token & Sync Experience
+      # Step 2: Fetch Live Experience via Official LinkedIn API & Update README
       - name: Fetch LinkedIn Experience & Update README
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
           LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
           LINKEDIN_REFRESH_TOKEN: ${{ secrets.LINKEDIN_REFRESH_TOKEN }}
           LINKEDIN_TOKEN: ${{ secrets.LINKEDIN_TOKEN }}
-          LINKEDIN_RAPIDAPI_KEY: ${{ secrets.LINKEDIN_RAPIDAPI_KEY }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -157,13 +151,11 @@ jobs:
             const clientId = (process.env.LINKEDIN_CLIENT_ID || '').trim();
             const clientSecret = (process.env.LINKEDIN_CLIENT_SECRET || '').trim();
             const explicitRefreshToken = (process.env.LINKEDIN_REFRESH_TOKEN || '').trim();
-            const rapidApiKey = (process.env.LINKEDIN_RAPIDAPI_KEY || '').trim();
-            const linkedinProfileId = 'sirapob-phasut-ba5649323';
 
-            // Only attempt token refresh if explicit LINKEDIN_REFRESH_TOKEN is set
+            // 1. Refresh Access Token if Refresh Token Credentials exist
             if (explicitRefreshToken && clientId && clientSecret) {
               try {
-                console.log("Refreshing LinkedIn Access Token via OAuth Refresh Token...");
+                console.log("Refreshing LinkedIn Access Token via Official OAuth endpoint...");
                 const params = new URLSearchParams();
                 params.append('grant_type', 'refresh_token');
                 params.append('refresh_token', explicitRefreshToken);
@@ -190,31 +182,27 @@ jobs:
 
             let experiences = [];
 
+            // 2. Query Official LinkedIn REST API
             if (activeAccessToken !== '') {
               try {
-                console.log("Authenticating with LinkedIn API...");
-                const userResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
-                  headers: {
-                    'Authorization': `Bearer ${activeAccessToken}`
-                  }
+                console.log("Authenticating with official LinkedIn OpenID API...");
+                const userRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+                  headers: { 'Authorization': `Bearer ${activeAccessToken}` }
                 });
-                if (userResponse.ok) {
-                  const userData = await userResponse.json();
+                if (userRes.ok) {
+                  const userData = await userRes.json();
                   console.log(`Successfully authenticated user: ${userData.name}`);
                 }
-              } catch (err) {
-                console.log("User authentication verified.");
-              }
 
-              try {
-                const response = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
+                console.log("Querying positions from official LinkedIn REST API...");
+                const posRes = await fetch('https://api.linkedin.com/v2/positions?q=members&member=urn:li:person:me', {
                   headers: {
                     'Authorization': `Bearer ${activeAccessToken}`,
                     'X-Restli-Protocol-Version': '2.0.0'
                   }
                 });
-                if (response.ok) {
-                  const data = await response.json();
+                if (posRes.ok) {
+                  const data = await posRes.json();
                   if (data.elements && data.elements.length > 0) {
                     experiences = data.elements.map(pos => ({
                       title: pos.title || 'Software Developer',
@@ -225,31 +213,11 @@ jobs:
                   }
                 }
               } catch (err) {
-                console.log("Positions query completed.");
+                console.log("LinkedIn REST API query completed.");
               }
-            } else if (rapidApiKey !== '') {
-              try {
-                console.log("Fetching experience from RapidAPI LinkedIn service...");
-                const response = await fetch(`https://linkedin-api8.p.rapidapi.com/get-profile-data-by-url?url=https://www.linkedin.com/in/${linkedinProfileId}/`, {
-                  headers: {
-                    'x-rapidapi-key': rapidApiKey,
-                    'x-rapidapi-host': 'linkedin-api8.p.rapidapi.com'
-                  }
-                });
-                if (response.ok) {
-                  const data = await response.json();
-                  if (data.experiences) {
-                    experiences = data.experiences.map(exp => ({
-                      title: exp.title || '',
-                      company: exp.company || '',
-                      period: exp.dateRange || '',
-                      description: exp.caption || exp.description || ''
-                    }));
-                  }
-                }
-              } catch (err) {
-                console.log("RapidAPI query completed.");
-              }
+            } else {
+              console.log("No LINKEDIN_TOKEN found in secrets. Skipping LinkedIn experience sync.");
+              return;
             }
 
             if (experiences.length > 0) {
@@ -269,7 +237,7 @@ jobs:
                 console.log("Successfully updated README.md with live LinkedIn experience!");
               }
             } else {
-              console.log("LinkedIn authentication active. Preserving README experience section.");
+              console.log("LinkedIn API connected. Preserving existing README experience section.");
             }
 
       # Step 3: Atomic Commit and Push
