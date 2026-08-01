@@ -1,0 +1,123 @@
+name: Update Tech Stack
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update Tech Stack using official github-script
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const username = 'OmegaOoh';
+            const badgeCatalog = {
+              'python': { name: 'Python', category: 'Languages', badge: '![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)' },
+              'rust': { name: 'Rust', category: 'Languages', badge: '![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white)' },
+              'c++': { name: 'C++', category: 'Languages', badge: '![C++](https://img.shields.io/badge/C++-00599C?style=flat-square&logo=cplusplus&logoColor=white)' },
+              'cpp': { name: 'C++', category: 'Languages', badge: '![C++](https://img.shields.io/badge/C++-00599C?style=flat-square&logo=cplusplus&logoColor=white)' },
+              'javascript': { name: 'JavaScript', category: 'Languages', badge: '![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)' },
+              'typescript': { name: 'TypeScript', category: 'Languages', badge: '![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)' },
+              'html': { name: 'HTML5', category: 'Languages', badge: '![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)' },
+              'css': { name: 'CSS3', category: 'Languages', badge: '![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)' },
+              'shell': { name: 'Shell', category: 'Languages', badge: '![Shell](https://img.shields.io/badge/Shell-4EAA25?style=flat-square&logo=gnu-bash&logoColor=white)' },
+
+              'django': { name: 'Django', category: 'Frameworks & Web', badge: '![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white)' },
+              'vue': { name: 'Vue.js', category: 'Frameworks & Web', badge: '![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)' },
+              'vue.js': { name: 'Vue.js', category: 'Frameworks & Web', badge: '![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)' },
+              'daisyui': { name: 'DaisyUI', category: 'Frameworks & Web', badge: '![DaisyUI](https://img.shields.io/badge/DaisyUI-5A0EF8?style=flat-square&logo=daisyui&logoColor=white)' },
+              'tailwindcss': { name: 'Tailwind CSS', category: 'Frameworks & Web', badge: '![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)' },
+
+              'git': { name: 'Git', category: 'Tools & Databases', badge: '![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)' },
+              'github': { name: 'GitHub', category: 'Tools & Databases', badge: '![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)' },
+              'docker': { name: 'Docker', category: 'Tools & Databases', badge: '![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)' },
+              'mysql': { name: 'MySQL', category: 'Tools & Databases', badge: '![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)' },
+              'mongodb': { name: 'MongoDB', category: 'Tools & Databases', badge: '![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)' },
+              'unreal engine': { name: 'Unreal Engine', category: 'Tools & Databases', badge: '![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)' },
+              'unreal-engine': { name: 'Unreal Engine', category: 'Tools & Databases', badge: '![Unreal Engine](https://img.shields.io/badge/Unreal_Engine-313131?style=flat-square&logo=unrealengine&logoColor=white)' },
+              'blender': { name: 'Blender', category: 'Tools & Databases', badge: '![Blender](https://img.shields.io/badge/Blender-E87D0D?style=flat-square&logo=blender&logoColor=white)' }
+            };
+
+            const coreTech = ['python', 'rust', 'c++', 'javascript', 'django', 'vue', 'daisyui', 'git', 'docker', 'mysql', 'mongodb', 'unreal engine', 'blender'];
+
+            let repos = [];
+            try {
+              const res = await github.rest.repos.listForUser({
+                username: username,
+                type: 'owner',
+                per_page: 100
+              });
+              repos = res.data;
+            } catch (err) {
+              console.error("Failed to fetch repos via Octokit:", err);
+            }
+
+            const detected = new Set();
+            for (const repo of repos) {
+              if (repo.fork) continue;
+              if (repo.language) detected.add(repo.language.toLowerCase());
+              if (repo.topics) {
+                for (const t of repo.topics) detected.add(t.toLowerCase());
+              }
+              const text = `${repo.name} ${repo.description || ''}`.toLowerCase();
+              for (const key of Object.keys(badgeCatalog)) {
+                if (text.includes(key)) detected.add(key);
+              }
+            }
+
+            for (const core of coreTech) detected.add(core);
+
+            const categorized = {
+              'Languages': [],
+              'Frameworks & Web': [],
+              'Tools & Databases': []
+            };
+            const seen = new Set();
+
+            for (const key of Object.keys(badgeCatalog)) {
+              if (detected.has(key)) {
+                const item = badgeCatalog[key];
+                if (!seen.has(item.name)) {
+                  seen.add(item.name);
+                  categorized[item.category].push(item.badge);
+                }
+              }
+            }
+
+            const lines = [];
+            for (const [cat, badges] of Object.entries(categorized)) {
+              if (badges.length > 0) {
+                lines.push(`**${cat}**  `);
+                lines.push(badges.join(' ') + '\n');
+              }
+            }
+            const techStackMd = lines.join('\n').trim();
+
+            let content = fs.readFileSync('README.md', 'utf8');
+            const pattern = /(<!-- START_SECTION:tech_stack -->)([\s\S]*?)(<!-- END_SECTION:tech_stack -->)/;
+            content = content.replace(pattern, `$1\n${techStackMd}\n$3`);
+            fs.writeFileSync('README.md', content, 'utf8');
+
+      - name: Commit and push changes if updated
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update tech stack in README [skip ci]" && git push)
